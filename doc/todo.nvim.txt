@@ -3,24 +3,24 @@
 ==============================================================================
 Table of Contents                                *todo.nvim-table-of-contents*
 
-1. todo.nvim 📔                                   |todo.nvim-todo.nvim-📔|
-  - 📦 Installation             |todo.nvim-todo.nvim-📔-📦-installation|
-  - ⚙️ Configuration       |todo.nvim-todo.nvim-📔-⚙️-configuration|
-  - ✍️ Usage                       |todo.nvim-todo.nvim-📔-✍️-usage|
-  - 🗺️ TODOs                     |todo.nvim-todo.nvim-📔-🗺️-todos|
-  - Contributing                       |todo.nvim-todo.nvim-📔-contributing|
-  - License                                 |todo.nvim-todo.nvim-📔-license|
+1. todo.nvim                                            |todo.nvim-todo.nvim-|
+  - Installation                           |todo.nvim-todo.nvim--installation|
+  - Configuration                         |todo.nvim-todo.nvim--configuration|
+  - Usage                                         |todo.nvim-todo.nvim--usage|
+  - TODOs                                         |todo.nvim-todo.nvim--todos|
+  - Contributing                           |todo.nvim-todo.nvim--contributing|
+  - License                                     |todo.nvim-todo.nvim--license|
 
 ==============================================================================
-1. todo.nvim 📔                                   *todo.nvim-todo.nvim-📔*
+1. todo.nvim                                            *todo.nvim-todo.nvim-*
 
-A minimal TODO scratch buffer for jotting down quick notes.
+Aminimal TODO scratch buffer for jotting down quick notes.
 
 
 
-📦 INSTALLATION                 *todo.nvim-todo.nvim-📔-📦-installation*
+INSTALLATION                               *todo.nvim-todo.nvim--installation*
 
-**lazy.nvim**:
+**lazy.nvim**
 
 >lua
     {
@@ -41,7 +41,7 @@ A minimal TODO scratch buffer for jotting down quick notes.
 <
 
 
-⚙️ CONFIGURATION           *todo.nvim-todo.nvim-📔-⚙️-configuration*
+CONFIGURATION                             *todo.nvim-todo.nvim--configuration*
 
 Default configuration:
 
@@ -65,7 +65,7 @@ Default configuration:
 <
 
 
-✍️ USAGE                           *todo.nvim-todo.nvim-📔-✍️-usage*
+USAGE                                             *todo.nvim-todo.nvim--usage*
 
   Command       Description
   ------------- --------------------------------
@@ -73,18 +73,18 @@ Default configuration:
   :Todo clear   Clears all TODOs from the file
   q             Close the TODO buffer
 
-🗺️ TODOS                         *todo.nvim-todo.nvim-📔-🗺️-todos*
+TODOS                                             *todo.nvim-todo.nvim--todos*
 
-- ☒ Floating window for TODO file
-- ☒ Clear/reset TODOs
-- ☐ Enhanced buffer styling + advanced configuration options
-- ☐ Add new items from the command line
-- ☐ Mark as done/ archive
-- ☐ Testing
+- Floating window for TODO file
+- Clear/reset TODOs
+- Enhanced buffer styling + advanced configuration options
+- Add new items from the command line
+- Mark as done/ archive
+- Testing
 
 ------------------------------------------------------------------------------
 
-CONTRIBUTING                           *todo.nvim-todo.nvim-📔-contributing*
+CONTRIBUTING                               *todo.nvim-todo.nvim--contributing*
 
 Pull requests welcome! If you have a feature or suggestion, feel free to open
 an issue or a pull request, I would be happy to review and merge any
@@ -92,7 +92,7 @@ contributions.
 
 ------------------------------------------------------------------------------
 
-LICENSE                                     *todo.nvim-todo.nvim-📔-license*
+LICENSE                                         *todo.nvim-todo.nvim--license*
 
 This repository is licensed under the MIT License. See LICENSE <./LICENSE> for
 more details.
