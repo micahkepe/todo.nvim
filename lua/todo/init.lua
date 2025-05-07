@@ -1,15 +1,5 @@
 local M = {}
 
----@class todo-nvim.Config
----@field todo_file string the path to the file to modify
----@alias border string
----| '"rounded"' # Like 'single' but with rounded corners
----| '"single"' # Single line box
----| '"double"' # Double line box
----| '"solid"' # Adds padding by a single whitespace cell
----| '"none"' # No border
----| '"shadow"' # Drop shadow effect with background
-
 --- Default configurations
 ---@type todo-nvim.Config
 local config = {
@@ -111,13 +101,13 @@ end
 local function init_user_commands()
   local todo_file = config.todo_file
 
-  -- USER API
+  -- Terminal commands
   vim.api.nvim_create_user_command("Todo", function(args)
     local sub = args.fargs[1]
     if not sub then
       create_floating_window(todo_file)
     elseif sub == "clear" then
-      require("utils").clear(config)
+      require("todo.utils").clear(config)
     else
       vim.notify("todo.nvim: Unknown subcommand: " .. sub, vim.log.levels.WARN)
     end
@@ -138,6 +128,15 @@ M.setup = function(opts)
   config = vim.tbl_deep_extend("force", config, opts)
 
   init_user_commands()
+
+  -- Lua API
+  M.open = function()
+    create_floating_window(config.todo_file)
+  end
+
+  M.clear = function()
+    require("todo.utils").clear(config)
+  end
 end
 
 return M

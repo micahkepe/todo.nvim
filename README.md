@@ -14,7 +14,6 @@ A minimal TODO scratch buffer for jotting down quick notes.
 ```lua
 {
     "micahkepe/todo.nvim",
-    lazy = false,
     ---@type todo-nvim.Config
     opts = {
         -- optional default overrides here
@@ -54,15 +53,12 @@ local config = {
 
 ## ✍️ Usage
 
-<center>
+| Command       | Lua API                   | Description                    |
+| ------------- | ------------------------- | ------------------------------ |
+| `:Todo`       | `require("todo").open()`  | Opens your TODO buffer         |
+| `:Todo clear` | `require("todo").clear()` | Clears all TODOs from the file |
 
-| Command       | Description                    |
-| ------------- | ------------------------------ |
-| `:Todo`       | Opens your TODO buffer         |
-| `:Todo clear` | Clears all TODOs from the file |
-| `q`           | Close the TODO buffer          |
-
-</center>
+The TODO buffer can be closed by pressing `q` inside the floating window.
 
 ## 🗺️ TODOs
 

@@ -1,0 +1,9 @@
+---@class todo-nvim.Config
+---@field todo_file string the path to the file to modify
+---@alias border string
+---| '"rounded"' # Like 'single' but with rounded corners
+---| '"single"' # Single line box
+---| '"double"' # Double line box
+---| '"solid"' # Adds padding by a single whitespace cell
+---| '"none"' # No border
+---| '"shadow"' # Drop shadow effect with background
