@@ -47,11 +47,11 @@ local function create_floating_window(target_file)
   local expanded_path = expand_path(target_file)
 
   -- check the filetype of the provided file
-  local ft = require("plenary.filetype").detect(expanded_path, {})
-  if ft ~= "markdown" then
-    vim.notify("todo.nvim: specified filetype is not Markdown: " .. expanded_path, vim.log.levels.ERROR)
-    return
-  end
+  -- local ft = require("plenary.filetype").detect(expanded_path, {})
+  -- if ft ~= "markdown" then
+  --   vim.notify("todo.nvim: specified filetype is not Markdown: " .. expanded_path, vim.log.levels.ERROR)
+  --   return
+  -- end
 
   if vim.fn.filereadable(expanded_path) == 0 then
     vim.notify("todo: target_file does not exist: " .. target_file .. "\nCreating...", vim.log.levels.INFO)
