@@ -77,6 +77,18 @@ function M.open()
       end
     end,
   })
+
+  -- add auto command to responsive layout
+  vim.api.nvim_create_autocmd("VimResized", {
+    group = vim.api.nvim_create_augroup("todo-resized", {}),
+    callback = function()
+      if not vim.api.nvim_buf_is_valid(buf) or win == nil then
+        return
+      end
+      local updated_configs = create_todo_menu_win_configs()
+      vim.api.nvim_win_set_config(win, updated_configs.menu)
+    end,
+  })
 end
 
 --- Add a variable number of todo items
