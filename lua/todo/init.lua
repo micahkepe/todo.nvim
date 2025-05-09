@@ -12,7 +12,7 @@ local config = {
   -- save_on_exit = true,
 }
 
---- Creates the window configurations for the floating TODO menu
+--- Creates the window configurations for the floating TODO menu(s)
 ---@return table <string, vim.api.keyset.win_config> window configurations
 local function create_todo_menu_win_configs()
   local width = math.min(math.floor(vim.o.columns * 0.8), 64)
@@ -79,6 +79,26 @@ function M.open()
   })
 end
 
+--- Add a variable number of todo items
+---@param item string the description of the todo item to add
+function M.add(item)
+  -- some defensive checking
+  if item == "" or item == nil then
+    vim.notify("todo.nvim: No TODO item(s) specified.", vim.log.levels.ERROR)
+    return
+  end
+
+  local file = io.open(config.todo_file, "a")
+  if file == nil then
+    vim.notify("todo.nvim: unable to open todo file" .. config.todo_file, vim.log.levels.ERROR)
+    return
+  end
+
+  file:write("- [ ] " .. item .. "\n")
+  file:close()
+  vim.notify("todo.nvim: added " .. item, vim.log.levels.INFO)
+end
+
 ---Prints the current todos, filtering on state if provided
 ---@param state? '"completed"' | '"undone"' | '"all"' Optional state filter
 function M.show(state)
@@ -124,6 +144,9 @@ local function init_terminal_cmds()
       M.clear()
     elseif sub == "show" then
       M.show(args.fargs[2])
+    elseif sub == "add" then
+      local item = vim.fn.input("Todo item: ", "")
+      M.add(item)
     else
       vim.notify("todo.nvim: Unknown subcommand: " .. sub, vim.log.levels.WARN)
     end
@@ -131,10 +154,12 @@ local function init_terminal_cmds()
     nargs = "*",
     complete = function(_, line)
       local args = vim.split(line, "%s+")
+      if #args == 2 then
+        return { "open", "add", "show", "clear" }
+      end
       if #args > 2 and args[2] == "show" then
         return { "all", "completed", "undone" }
       end
-      return { "open", "show", "clear" }
     end,
   })
 end

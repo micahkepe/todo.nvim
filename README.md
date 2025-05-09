@@ -57,6 +57,7 @@ local config = {
 | Command                                   | Lua API                   | Description                                    |
 | ----------------------------------------- | ------------------------- | ---------------------------------------------- |
 | `:Todo` or `:Todo open`                   | `require("todo").open()`  | Opens your TODO buffer                         |
+| `:Todo add`                               | `require("todo").add()`   | Add prompt item to list                        |
 | `:Todo show [completed \| undone \| all]` | `require("todo").show()`  | Print out TODOs, optionally filtering by state |
 | `:Todo clear`                             | `require("todo").clear()` | Clears all TODOs from the file                 |
 
