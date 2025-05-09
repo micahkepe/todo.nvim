@@ -1,3 +1,5 @@
+local utils = require("todo.utils")
+
 local M = {}
 
 --- Default configurations
@@ -5,24 +7,14 @@ local M = {}
 local config = {
   border = "rounded",
   todo_file = vim.fn.stdpath("data") .. "/todos.md",
+  -- TODO: additional configuration options
+  -- remove_completed = false,
+  -- save_on_exit = true,
 }
 
---- Expands paths starting with `~` to the fully expanded path, substituting
---- `~` if present with `$HOME`
----@param path string the filepath with potential `~`
----@return string the fully expanded path without `~`
-local function expand_path(path)
-  if path:sub(1, 1) == "~" then
-    return os.getenv("HOME") .. path:sub(2)
-  end
-  return path
-end
-
---- Creates the window configuration (`vim.api.nvim_open_win(.., **config**)`)
----@param opts table Optional configuration settings for the window
----@return vim.api.keyset.win_config
-local function create_win_config(opts)
-  opts = opts or {}
+--- Creates the window configurations for the floating TODO menu
+---@return table <string, vim.api.keyset.win_config> window configurations
+local function create_todo_menu_win_configs()
   local width = math.min(math.floor(vim.o.columns * 0.8), 64)
   local height = math.floor(vim.o.lines * 0.8)
 
@@ -31,55 +23,45 @@ local function create_win_config(opts)
   local col = math.floor((vim.o.columns - width) / 2)
 
   return {
-    relative = "editor",
-    width = width,
-    height = height,
-    col = col,
-    row = row,
-    border = config.border,
+    menu = {
+      relative = "editor",
+      width = width,
+      height = height,
+      col = col,
+      row = row,
+      border = config.border,
+    },
   }
 end
 
 --- Opens a floating buffer for the specified file, creating it if it does not
 --- exists.
---- @param target_file string filepath to the Markdown file to store TODOs
-local function create_floating_window(target_file)
-  local expanded_path = expand_path(target_file)
+function M.open()
+  local target_file = config.todo_file
+  local expanded_path = utils.expand_path(target_file)
 
-  -- check the filetype of the provided file
-  -- local ft = require("plenary.filetype").detect(expanded_path, {})
-  -- if ft ~= "markdown" then
-  --   vim.notify("todo.nvim: specified filetype is not Markdown: " .. expanded_path, vim.log.levels.ERROR)
-  --   return
-  -- end
-
+  -- check if the file can be read
   if vim.fn.filereadable(expanded_path) == 0 then
-    vim.notify("todo: target_file does not exist: " .. target_file .. "\nCreating...", vim.log.levels.INFO)
-
+    vim.notify("todo: todo_file does not exist: " .. target_file .. "\nCreating...", vim.log.levels.INFO)
     -- create a new file instead
-    local file = io.open(expanded_path, "w")
-
-    if file == nil then
-      vim.notify("Unable to create todo-nvim file, quiting...")
-      return
-    end
-
-    file:write("- [ ] my first todo")
-    file:close()
+    utils.create_new_todo_file(expanded_path)
   end
 
+  -- create a new buffer for the file
   local buf = vim.fn.bufnr(expanded_path, true)
-
-  -- create buffer manually if not created
   if buf == -1 then
     buf = vim.api.nvim_create_buf(false, false)
     vim.api.nvim_buf_set_name(buf, expanded_path)
   end
 
-  -- disable swap file on the buffer
+  local win_configs = create_todo_menu_win_configs()
+
+  -- treat as Markdown file regardless and disable swapfiles
+  vim.bo[buf].filetype = "markdown"
   vim.bo[buf].swapfile = false
 
-  local win = vim.api.nvim_open_win(buf, true, create_win_config({}))
+  -- open the buffer
+  local win = vim.api.nvim_open_win(buf, true, win_configs.menu)
 
   -- local keymappings for TODO file
   vim.api.nvim_buf_set_keymap(buf, "n", "q", "", {
@@ -97,24 +79,62 @@ local function create_floating_window(target_file)
   })
 end
 
---- Initializes the user's configuration options, if any
-local function init_user_commands()
-  local todo_file = config.todo_file
+---Prints the current todos, filtering on state if provided
+---@param state? '"completed"' | '"undone"' | '"all"' Optional state filter
+function M.show(state)
+  state = state or "all"
+  local fp = utils.expand_path(config.todo_file)
+  local todos = utils.parse_todos(fp)
 
+  for _, value in ipairs(todos) do
+    if state == "completed" and not value.completed then
+      -- skip
+    elseif state == "undone" and value.completed then
+      -- skip
+    else
+      print(value.desc)
+    end
+  end
+end
+
+--- Clears all TODOs from the target file and resets it to the default
+--- file content.
+function M.clear()
+  local file = io.open(config.todo_file, "w+")
+  if not file then
+    vim.notify("todo.nvim: unable to clear file: " .. config.todo_file, vim.log.levels.ERROR)
+    return
+  end
+  file:write("# TODOs\n\n")
+  file:write("- [ ] ")
+
+  file:close()
+
+  vim.notify("todo.nvim: TODOs cleared!", vim.log.levels.INFO)
+end
+
+--- Initializes terminal commands and completions.
+local function init_terminal_cmds()
   -- Terminal commands
   vim.api.nvim_create_user_command("Todo", function(args)
     local sub = args.fargs[1]
-    if not sub then
-      create_floating_window(todo_file)
+    if not sub or sub == "open" then
+      M.open()
     elseif sub == "clear" then
-      require("todo.utils").clear(config)
+      M.clear()
+    elseif sub == "show" then
+      M.show(args.fargs[2])
     else
       vim.notify("todo.nvim: Unknown subcommand: " .. sub, vim.log.levels.WARN)
     end
   end, {
     nargs = "*",
-    complete = function()
-      return { "clear" }
+    complete = function(_, line)
+      local args = vim.split(line, "%s+")
+      if #args > 2 and args[2] == "show" then
+        return { "all", "completed", "undone" }
+      end
+      return { "open", "show", "clear" }
     end,
   })
 end
@@ -127,16 +147,7 @@ M.setup = function(opts)
   -- override defaults
   config = vim.tbl_deep_extend("force", config, opts)
 
-  init_user_commands()
-
-  -- Lua API
-  M.open = function()
-    create_floating_window(config.todo_file)
-  end
-
-  M.clear = function()
-    require("todo.utils").clear(config)
-  end
+  init_terminal_cmds()
 end
 
 return M

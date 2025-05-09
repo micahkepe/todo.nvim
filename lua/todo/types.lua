@@ -7,3 +7,11 @@
 ---| '"solid"' # Adds padding by a single whitespace cell
 ---| '"none"' # No border
 ---| '"shadow"' # Drop shadow effect with background
+---
+---TODO:
+---@field remove_completed boolean whether to remove TODOs upon completion
+---@field save_on_exit boolean whether to autosave on TODO menu closure
+
+---@class todo-nvim.TodoItem
+---@field desc string description of the TODO action
+---@field completed boolean the completion state of the item
