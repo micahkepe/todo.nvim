@@ -1,4 +1,4 @@
-*todo.nvim.txt*            For NVIM v0.8.0            Last change: 2025 May 09
+*todo.nvim.txt*            For NVIM v0.8.0            Last change: 2025 May 10
 
 ==============================================================================
 Table of Contents                                *todo.nvim-table-of-contents*
@@ -67,29 +67,36 @@ Default configuration:
 
 USAGE                                             *todo.nvim-todo.nvim--usage*
 
-  -------------------------------------------------------------------------------------------------
-  Command                                   Lua API                   Description
-  ----------------------------------------- ------------------------- -----------------------------
-  :Todo or :Todo open                       require("todo").open()    Opens your TODO buffer
+  ----------------------------------------------------------------------------------------------------------
+  Command                                       Lua API                      Description
+  --------------------------------------------- ---------------------------- -------------------------------
+  :Todo                                         require("todo").open()       Opens your TODO buffer
 
-  :Todo add                                 require("todo").add()     Add prompt item to list
+  :Todo add <desc>                              require("todo").add()        Add TODO item to list
 
-  :Todo show [completed \| undone \| all]   require("todo").show()    Print out TODOs, optionally
-                                                                      filtering by state
+  :Todo remove <desc>                           require("todo").remove()     Remote TODO item to list
 
-  :Todo clear                               require("todo").clear()   Clears all TODOs from the
-                                                                      file
-  -------------------------------------------------------------------------------------------------
+  :Todo complete <desc>                         require("todo").complete()   Mark the item with the given
+                                                                             description as complete
+
+  :Todo show [completed \| incomplete \| all]   require("todo").show()       Notification list of TODOs,
+                                                                             optionally filtering by state
+
+  :Todo reset                                   require("todo").reset()      Clears all TODOs from the file
+  ----------------------------------------------------------------------------------------------------------
 The TODO buffer can be closed by pressing `q` inside the floating window.
 
 
 TODOS                                             *todo.nvim-todo.nvim--todos*
 
+(meta, I know)
+
 - Floating window for TODO file
 - Clear/reset TODOs
-- Enhanced buffer styling + advanced configuration options
-- Add new items from the command line
 - Mark as done/ archive
+- Add new items from the command line
+- Enhanced buffer styling + advanced configuration options
+- Async/ deferred functions for active TODO buffer
 - Testing
 
 ------------------------------------------------------------------------------
