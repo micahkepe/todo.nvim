@@ -54,14 +54,14 @@ local config = {
 
 ## ✍️ Usage
 
-| Command                                       | Lua API                      | Description                                               |
-| --------------------------------------------- | ---------------------------- | --------------------------------------------------------- |
-| `:Todo`                                       | `require("todo").open()`     | Opens your TODO buffer                                    |
-| `:Todo add <desc>`                            | `require("todo").add()`      | Add TODO item to list                                     |
-| `:Todo remove <desc>`                         | `require("todo").remove()`   | Remote TODO item to list                                  |
-| `:Todo complete <desc>`                       | `require("todo").complete()` | Mark the item with the given description as complete      |
-| `:Todo show [completed \| incomplete \| all]` | `require("todo").show()`     | Notification list of TODOs, optionally filtering by state |
-| `:Todo reset`                                 | `require("todo").reset()`    | Clears all TODOs from the file                            |
+| Command                                       | Lua API                      | Description                                               | Completions |
+| --------------------------------------------- | ---------------------------- | --------------------------------------------------------- | ----------- |
+| `:Todo`                                       | `require("todo").open()`     | Opens your TODO buffer                                    | ✅          |
+| `:Todo add <desc>`                            | `require("todo").add()`      | Add TODO item to list                                     | ❌          |
+| `:Todo remove <desc>`                         | `require("todo").remove()`   | Remote TODO item to list                                  | ✅          |
+| `:Todo complete <desc>`                       | `require("todo").complete()` | Mark the item with the given description as complete      | ✅          |
+| `:Todo show [completed \| incomplete \| all]` | `require("todo").show()`     | Notification list of TODOs, optionally filtering by state | ✅          |
+| `:Todo reset`                                 | `require("todo").reset()`    | Clears all TODOs from the file                            | ❌          |
 
 The TODO buffer can be closed by pressing `q` inside the floating window.
 
