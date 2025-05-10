@@ -108,40 +108,110 @@ function M.add(item)
 
   file:write("- [ ] " .. item .. "\n")
   file:close()
-  vim.notify("todo.nvim: added " .. item, vim.log.levels.INFO)
+  vim.notify(string.format("todo.nvim: added '%s'", item), vim.log.levels.INFO)
+end
+
+--- Remove the item matching the description from the todo list
+---@param desc string the description of the item to remove
+function M.remove(desc)
+  if desc == "" or desc == nil then
+    vim.notify("todo.nvim: no item to remove specified")
+    return
+  end
+
+  utils.remove_todo(config.todo_file, desc)
 end
 
 ---Prints the current todos, filtering on state if provided
----@param state? '"completed"' | '"undone"' | '"all"' Optional state filter
+---@param state? '"completed"' | '"incomplete"' | '"all"' Optional state filter
 function M.show(state)
   state = state or "all"
   local fp = utils.expand_path(config.todo_file)
   local todos = utils.parse_todos(fp)
 
-  for _, value in ipairs(todos) do
-    if state == "completed" and not value.completed then
-      -- skip
-    elseif state == "undone" and value.completed then
-      -- skip
-    else
-      print(value.desc)
+  -- rust mind go brr
+  local todo_descs = vim
+    .iter(todos)
+    :filter(function(todo)
+      return (state == "all")
+        or (state == "completed" and todo.completed)
+        or (state == "incomplete" and not todo.completed)
+    end)
+    :map(function(todo)
+      if todo.completed then
+        return "- ✅ " .. todo.desc
+      else
+        return "- ❌ " .. todo.desc
+      end
+    end)
+    :totable()
+
+  if #todo_descs == 0 then
+    local msg = string.format("todo.nvim: no items found for '%s'", state)
+    vim.notify(msg, vim.log.levels.INFO)
+    return
+  end
+
+  local msg = table.concat(todo_descs, "\n")
+  vim.notify(msg, vim.log.levels.INFO)
+end
+
+--- Mark the todo item of the given description as complete
+---@param desc string the description of the todo item
+function M.complete(desc)
+  if desc == "" or desc == nil then
+    vim.notify("todo.nvim: no item provided to complete", vim.log.levels.ERROR)
+    return
+  end
+
+  local filepath = utils.expand_path(config.todo_file)
+  local file = io.open(filepath, "r")
+  if not file then
+    vim.notify("todo.nvim: unable to open todo file: " .. filepath, vim.log.levels.ERROR)
+    return
+  end
+
+  local lines = {}
+  local marked = false
+  local pattern = "%- %[ %] " .. vim.pesc(desc) .. "$"
+
+  for line in file:lines() do
+    if not marked and string.match(line, pattern) then
+      -- mark the line as done
+      line = string.gsub(line, "%- %[ %]", "- [x]")
+      marked = true
     end
+    table.insert(lines, line)
+  end
+  file:close()
+
+  -- write updated contents
+  file = assert(io.open(filepath, "w"))
+  for _, line in ipairs(lines) do
+    file:write(line .. "\n")
+  end
+  file:close()
+
+  if not marked then
+    local msg = string.format("todo.nvim: unable to find item to mark: '%s'", desc)
+    vim.notify(msg, vim.log.levels.WARN)
+  else
+    local msg = string.format("todo.nvim: Marked complete: '%s'", desc)
+    vim.notify(msg, vim.log.levels.INFO)
   end
 end
 
 --- Clears all TODOs from the target file and resets it to the default
 --- file content.
-function M.clear()
+function M.reset()
   local file = io.open(config.todo_file, "w+")
   if not file then
     vim.notify("todo.nvim: unable to clear file: " .. config.todo_file, vim.log.levels.ERROR)
     return
   end
+
   file:write("# TODOs\n\n")
-  file:write("- [ ] ")
-
   file:close()
-
   vim.notify("todo.nvim: TODOs cleared!", vim.log.levels.INFO)
 end
 
@@ -150,27 +220,50 @@ local function init_terminal_cmds()
   -- Terminal commands
   vim.api.nvim_create_user_command("Todo", function(args)
     local sub = args.fargs[1]
-    if not sub or sub == "open" then
+    if not sub then
       M.open()
-    elseif sub == "clear" then
-      M.clear()
+    elseif sub == "reset" then
+      M.reset()
     elseif sub == "show" then
       M.show(args.fargs[2])
     elseif sub == "add" then
-      local item = vim.fn.input("Todo item: ", "")
-      M.add(item)
+      M.add(table.concat(vim.list_slice(args.fargs, 2), " "))
+    elseif sub == "remove" then
+      M.remove(table.concat(vim.list_slice(args.fargs, 2), " "))
+    elseif sub == "complete" then
+      M.complete(table.concat(vim.list_slice(args.fargs, 2), " "))
     else
       vim.notify("todo.nvim: Unknown subcommand: " .. sub, vim.log.levels.WARN)
     end
   end, {
     nargs = "*",
+    -- generate completion options for commands
     complete = function(_, line)
       local args = vim.split(line, "%s+")
       if #args == 2 then
-        return { "open", "add", "show", "clear" }
+        return { "add", "complete", "remove", "show", "reset" }
       end
-      if #args > 2 and args[2] == "show" then
-        return { "all", "completed", "undone" }
+      if #args > 2 then
+        if args[2] == "show" then
+          return { "all", "completed", "incomplete" }
+        elseif args[2] == "remove" then
+          local todos = utils.parse_todos(config.todo_file)
+          local suggested = {}
+          for _, todo in ipairs(todos) do
+            table.insert(suggested, todo.desc)
+          end
+          return suggested
+        elseif args[2] == "complete" then
+          return vim
+            .iter(utils.parse_todos(config.todo_file))
+            :filter(function(todo)
+              return not todo.completed
+            end)
+            :map(function(todo)
+              return todo.desc
+            end)
+            :totable()
+        end
       end
     end,
   })

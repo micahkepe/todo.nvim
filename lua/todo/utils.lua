@@ -55,6 +55,47 @@ function M.parse_todos(filepath)
   return todos
 end
 
+--- Removes the first occurrence of the todo item, by description.
+---@param filepath string path to the todo file
+---@param desc string the description of the todo item to remove
+function M.remove_todo(filepath, desc)
+  local file = io.open(filepath, "r")
+
+  if file == nil then
+    vim.notify("todo.nvim: unable to open todo file, quitting...", vim.log.levels.ERROR)
+    return
+  end
+
+  local lines = {}
+  local removed = false
+  local pattern = "%- %[[x ]%] " .. vim.pesc(desc) .. "$"
+
+  for line in file:lines() do
+    if not removed and string.match(line, pattern) then
+      -- skip this line
+      removed = true
+    else
+      table.insert(lines, line)
+    end
+  end
+  file:close()
+
+  -- write the updated contents
+  file = assert(io.open(filepath, "w"))
+  for _, line in ipairs(lines) do
+    file:write(line .. "\n")
+  end
+  file:close()
+
+  if removed then
+    local msg = string.format("todo.nvim: Removed '%s'", desc)
+    vim.notify(msg, vim.log.levels.INFO)
+  else
+    local msg = string.format("todo.nvim: No match for '%s'", desc)
+    vim.notify(msg, vim.log.levels.WARN)
+  end
+end
+
 --- Creates a window and scratch buffer with the given configuration
 ---@param win_opts vim.api.keyset.win_config
 ---@param enter? boolean whether to enter the created window
