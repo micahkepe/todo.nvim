@@ -74,6 +74,9 @@ function M.open()
         vim.notify("todo.nvim: unsaved changes", vim.log.levels.WARN)
       else
         vim.api.nvim_win_close(0, true)
+        -- delete the created buffer as well so that it doesn't pollute
+        -- buffer tabs
+        vim.api.nvim_buf_delete(buf, {})
       end
     end,
   })
