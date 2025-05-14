@@ -36,7 +36,8 @@ Default configuration:
 
 ```lua
 ---@class todo-nvim.Config
----@field todo_file string the path to the file to modify
+---@field todo_file string The path to the file to modify
+---@field todo_title string The title used for the header at the top of the Markdown file.
 ---@alias border string
 ---| '"rounded"' # Like 'single' but with rounded corners
 ---| '"single"' # Single line box
@@ -50,6 +51,7 @@ Default configuration:
 local config = {
   border = "rounded",
   todo_file = vim.fn.stdpath("data") .. "/todos.md",
+  todo_title = "TODOs",
 }
 ```
 
@@ -65,18 +67,6 @@ local config = {
 | `:Todo reset`                                 | `require("todo").reset()`    | Clears all TODOs from the file                            | ❌          |
 
 The TODO buffer can be closed by pressing `q` inside the floating window.
-
-## 🗺️ TODOs
-
-(meta, I know)
-
-- [x] Floating window for TODO file
-- [x] Clear/reset TODOs
-- [x] Mark as done/ archive
-- [x] Add new items from the command line
-- [ ] Enhanced buffer styling + advanced configuration options
-- [ ] Async/ deferred functions for active TODO buffer
-- [ ] Testing
 
 ---
 

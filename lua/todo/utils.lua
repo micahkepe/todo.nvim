@@ -25,6 +25,19 @@ function M.create_new_todo_file(filepath)
   file:close()
 end
 
+--- Centers text within a given width using spaces
+---@param text string The text to center
+---@param width number The total width of the line
+---@return string The centered text with padding
+function M.center_text(text, width)
+  local text_len = #text
+  if text_len >= width then
+    return text:sub(1, width) -- Truncate if too long
+  end
+  local padding = math.floor((width - text_len) / 2)
+  return string.rep(" ", padding) .. text .. string.rep(" ", width - text_len - padding)
+end
+
 --- Parses the given file and returns all todo items
 ---@param filepath string expanded path to the todo file
 ---@return todo-nvim.TodoItem[]

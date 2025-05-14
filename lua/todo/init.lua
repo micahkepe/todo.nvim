@@ -11,14 +11,20 @@ local state = {
   }),
 }
 
+--- Second-order function to apply a callback function to each float
+---@param callback function
+local foreach_float = function(callback)
+  for name, float in pairs(state.floats) do
+    callback(name, float)
+  end
+end
+
 --- Default configurations
 ---@type todo-nvim.Config
 local config = {
   border = "rounded",
   todo_file = vim.fn.stdpath("data") .. "/todos.md",
-  -- TODO: additional configuration options
-  -- remove_completed = false,
-  -- save_on_exit = true,
+  todo_title = "TODOs",
 }
 
 --- Creates the window configurations for the floating TODO menu(s)
@@ -32,7 +38,7 @@ local function create_todo_menu_win_configs()
   local col = math.floor((vim.o.columns - width) / 2)
 
   return {
-    menu = {
+    body = {
       relative = "editor",
       width = width,
       height = height,
@@ -40,6 +46,7 @@ local function create_todo_menu_win_configs()
       row = row,
       border = config.border,
     },
+    -- add additional windows configs here
   }
 end
 
@@ -48,9 +55,10 @@ end
 function M.toggle()
   -- if existing menu exists, toggle it closed
   if state.floats.body.win ~= nil and vim.api.nvim_win_is_valid(state.floats.body.win) then
-    vim.api.nvim_win_close(state.floats.body.win, true)
-
-    -- close buffer as well
+    foreach_float(function(_, float)
+      pcall(vim.api.nvim_win_close, float.win, true)
+    end)
+    -- close body buffer as well
     if vim.api.nvim_buf_is_valid(state.floats.body.buf) then
       vim.api.nvim_buf_delete(state.floats.body.buf, {})
     end
@@ -76,14 +84,15 @@ function M.toggle()
 
   local win_configs = create_todo_menu_win_configs()
 
-  -- treat as Markdown file regardless and disable swapfiles
-  vim.bo[buf].filetype = "markdown"
-  vim.bo[buf].swapfile = false
-
   -- open the buffer
-  local win = vim.api.nvim_open_win(buf, true, win_configs.menu)
-
+  local win = vim.api.nvim_open_win(buf, true, win_configs.body)
   state.floats.body = { win = win, buf = buf }
+
+  -- disable swap files
+  foreach_float(function(_, float)
+    vim.bo[float.buf].swapfile = false
+    vim.bo[float.buf].filetype = "markdown"
+  end)
 
   -- local keymappings for TODO file
   vim.api.nvim_buf_set_keymap(buf, "n", "q", "", {
@@ -95,7 +104,9 @@ function M.toggle()
       }) then
         vim.notify("todo.nvim: unsaved changes", vim.log.levels.WARN)
       else
-        vim.api.nvim_win_close(0, true)
+        foreach_float(function(_, float)
+          pcall(vim.api.nvim_win_close, float.win, true)
+        end)
         -- delete the created buffer as well so that it doesn't pollute
         -- buffer tabs
         vim.api.nvim_buf_delete(buf, {})
@@ -111,7 +122,19 @@ function M.toggle()
         return
       end
       local updated_configs = create_todo_menu_win_configs()
-      vim.api.nvim_win_set_config(win, updated_configs.menu)
+      foreach_float(function(name, _)
+        vim.api.nvim_win_set_config(state.floats[name].win, updated_configs[name])
+      end)
+    end,
+  })
+
+  -- close all floats on BufLeave
+  vim.api.nvim_create_autocmd("BufLeave", {
+    group = vim.api.nvim_create_augroup("todo-menu-left", {}),
+    callback = function()
+      foreach_float(function(_, float)
+        pcall(vim.api.nvim_win_close, float.win, true)
+      end)
     end,
   })
 end
@@ -235,7 +258,8 @@ function M.reset()
     return
   end
 
-  file:write("# TODOs\n\n")
+  local todo_title = string.format("# %s\n\n", config.todo_title)
+  file:write(todo_title)
   file:close()
   vim.notify("todo.nvim: TODOs cleared!", vim.log.levels.INFO)
 end
