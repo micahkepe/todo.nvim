@@ -2,6 +2,15 @@ local utils = require("todo.utils")
 
 local M = {}
 
+--- State management for created windows and buffers
+local state = {
+  floats = setmetatable({}, {
+    __index = function()
+      return { win = nil, buf = nil }
+    end,
+  }),
+}
+
 --- Default configurations
 ---@type todo-nvim.Config
 local config = {
@@ -34,9 +43,20 @@ local function create_todo_menu_win_configs()
   }
 end
 
---- Opens a floating buffer for the specified file, creating it if it does not
+--- Toggle a floating buffer for the specified file, creating it if it does not
 --- exists.
-function M.open()
+function M.toggle()
+  -- if existing menu exists, toggle it closed
+  if state.floats.body.win ~= nil and vim.api.nvim_win_is_valid(state.floats.body.win) then
+    vim.api.nvim_win_close(state.floats.body.win, true)
+
+    -- close buffer as well
+    if vim.api.nvim_buf_is_valid(state.floats.body.buf) then
+      vim.api.nvim_buf_delete(state.floats.body.buf, {})
+    end
+    return
+  end
+
   local target_file = config.todo_file
   local expanded_path = utils.expand_path(target_file)
 
@@ -62,6 +82,8 @@ function M.open()
 
   -- open the buffer
   local win = vim.api.nvim_open_win(buf, true, win_configs.menu)
+
+  state.floats.body = { win = win, buf = buf }
 
   -- local keymappings for TODO file
   vim.api.nvim_buf_set_keymap(buf, "n", "q", "", {
@@ -224,7 +246,7 @@ local function init_terminal_cmds()
   vim.api.nvim_create_user_command("Todo", function(args)
     local sub = args.fargs[1]
     if not sub then
-      M.open()
+      M.toggle()
     elseif sub == "reset" then
       M.reset()
     elseif sub == "show" then
