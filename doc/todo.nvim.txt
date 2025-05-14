@@ -1,4 +1,4 @@
-*todo.nvim.txt*            For NVIM v0.8.0            Last change: 2025 May 10
+*todo.nvim.txt*            For NVIM v0.8.0            Last change: 2025 May 14
 
 ==============================================================================
 Table of Contents                                *todo.nvim-table-of-contents*
@@ -25,7 +25,8 @@ INSTALLATION                               *todo.nvim-todo.nvim--installation*
 >lua
     {
         "micahkepe/todo.nvim",
-        lazy = false,
+        cmd = "Todo",
+    
         ---@type todo-nvim.Config
         opts = {
             -- optional default overrides here
@@ -70,7 +71,8 @@ USAGE                                             *todo.nvim-todo.nvim--usage*
   ---------------------------------------------------------------------------------------------------------------------
   Command                                       Lua API                      Description                  Completions
   --------------------------------------------- ---------------------------- ---------------------------- -------------
-  :Todo                                         require("todo").open()       Opens your TODO buffer       
+  :Todo                                         require("todo").toggle()     Toggles the TODO buffer      
+                                                                             open/close                   
 
   :Todo add <desc>                              require("todo").add()        AddTODO item to list         
 
