@@ -1,4 +1,4 @@
-*todo.nvim.txt*            For NVIM v0.8.0            Last change: 2025 May 14
+*todo.nvim.txt*            For NVIM v0.8.0            Last change: 2025 May 21
 
 ==============================================================================
 Table of Contents                                *todo.nvim-table-of-contents*
@@ -74,6 +74,9 @@ USAGE                                             *todo.nvim-todo.nvim--usage*
   --------------------------------------------- ---------------------------- ---------------------------- -------------
   :Todo                                         require("todo").toggle()     Toggles the TODO buffer      
                                                                              open/close                   
+
+  :Todo Today                                   require("todo").today()      Adda TODO section for the    
+                                                                             current day (MM-DD-YYYY)     
 
   :Todo add <desc>                              require("todo").add()        AddTODO item to list         
 
