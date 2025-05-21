@@ -139,6 +139,68 @@ function M.toggle()
   })
 end
 
+--- Adds a todo section for the current day (MM-DD-YYYY) at the top of the todo
+--- file below the title, if it exists
+function M.today()
+  local filepath = utils.expand_path(config.todo_file)
+
+  -- Check if file exists, create it if it doesn't
+  if vim.fn.filereadable(filepath) == 0 then
+    vim.notify("todo.nvim: todo_file does not exist: " .. config.todo_file .. "\nCreating...", vim.log.levels.INFO)
+    utils.create_new_todo_file(filepath)
+    return
+  end
+
+  local contents = utils.read_file(filepath)
+  if contents == nil then
+    vim.notify("todo.nvim: unable to read todo file " .. config.todo_file, vim.log.levels.ERROR)
+    return
+  end
+
+  local date = os.date("%m-%d-%Y")
+  local section_header = string.format("## %s", date)
+
+  ---@diagnostic disable-next-line: param-type-mismatch
+  local section_pattern = "## " .. date:gsub("%-", "%%-") -- Escape hyphens in the date
+  if contents:match(section_pattern) then
+    vim.notify(string.format("todo.nvim: section for %s already exists", date), vim.log.levels.INFO)
+    return
+  end
+
+  -- Add empty todo item
+  local today_section = section_header .. "\n\n- [ ] "
+
+  -- Insert the section after the title, if it exists
+  local title_pattern = "^# .-\n"
+  local title_match = contents:match(title_pattern)
+  if not title_match then
+    -- If no title is found, can add directly to beginning of file
+    local file = io.open(filepath, "w")
+    if not file then
+      vim.notify("todo.nvim: unable to open todo file for writing: " .. config.todo_file, vim.log.levels.ERROR)
+      return
+    end
+    local updated_content = today_section .. "\n\n" .. contents
+    file:write(updated_content)
+    file:close()
+  else
+    local title_end = contents:find("\n", contents:find(title_pattern)) or 0
+    local updated_content = contents:sub(1, title_end) .. "\n" .. today_section .. "\n" .. contents:sub(title_end + 1)
+
+    -- Write the modified content back to the file
+    local file = io.open(filepath, "w")
+    if not file then
+      vim.notify("todo.nvim: unable to open todo file for writing: " .. config.todo_file, vim.log.levels.ERROR)
+      return
+    end
+
+    file:write(updated_content)
+    file:close()
+  end
+
+  vim.notify(string.format("todo.nvim: added section for %s", date), vim.log.levels.INFO)
+end
+
 --- Add a variable number of todo items
 ---@param item string the description of the todo item to add
 function M.add(item)
@@ -271,6 +333,8 @@ local function init_terminal_cmds()
     local sub = args.fargs[1]
     if not sub then
       M.toggle()
+    elseif sub == "Today" then
+      M.today()
     elseif sub == "reset" then
       M.reset()
     elseif sub == "show" then
@@ -290,7 +354,7 @@ local function init_terminal_cmds()
     complete = function(_, line)
       local args = vim.split(line, "%s+")
       if #args == 2 then
-        return { "add", "complete", "remove", "show", "reset" }
+        return { "Today", "add", "complete", "remove", "show", "reset" }
       end
       if #args > 2 then
         if args[2] == "show" then

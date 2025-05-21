@@ -60,6 +60,7 @@ local config = {
 | Command                                       | Lua API                      | Description                                               | Completions |
 | --------------------------------------------- | ---------------------------- | --------------------------------------------------------- | ----------- |
 | `:Todo`                                       | `require("todo").toggle()`   | Toggles the TODO buffer open/close                        | ✅          |
+| `:Todo Today`                                 | `require("todo").today()`    | Add a TODO section for the current day (MM-DD-YYYY)       | ❌          |
 | `:Todo add <desc>`                            | `require("todo").add()`      | Add TODO item to list                                     | ❌          |
 | `:Todo remove <desc>`                         | `require("todo").remove()`   | Remote TODO item to list                                  | ✅          |
 | `:Todo complete <desc>`                       | `require("todo").complete()` | Mark the item with the given description as complete      | ✅          |

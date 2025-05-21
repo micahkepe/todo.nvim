@@ -38,6 +38,20 @@ function M.center_text(text, width)
   return string.rep(" ", padding) .. text .. string.rep(" ", width - text_len - padding)
 end
 
+--- Reads the contents of a file and returns it as a string
+---@param filepath string the path to the file
+---@return string|nil the contents of the file, if any
+function M.read_file(filepath)
+  local file = io.open(filepath, "r")
+  if not file then
+    return nil
+  end
+
+  local content = file:read("*a")
+  file:close()
+  return content
+end
+
 --- Parses the given file and returns all todo items
 ---@param filepath string expanded path to the todo file
 ---@return todo-nvim.TodoItem[]
