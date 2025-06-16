@@ -85,7 +85,7 @@ USAGE                                             *todo.nvim-todo.nvim--usage*
   :Todo complete <desc>                         require("todo").complete()   Markthe item with the given  
                                                                              description as complete      
 
-  :Todo show [completed \| incomplete \| all]   require("todo").show()       Notificationlist of TODOs,   
+  :Todo list [completed \| incomplete \| all]   require("todo").list()       Notificationlist of TODOs,   
                                                                              optionally filtering by      
                                                                              state                        
 

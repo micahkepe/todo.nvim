@@ -233,9 +233,9 @@ function M.remove(desc)
 end
 
 ---Prints the current todos, filtering on state if provided
----@param state? '"completed"' | '"incomplete"' | '"all"' Optional state filter
-function M.show(state)
-  state = state or "all"
+---@param progress? '"completed"' | '"incomplete"' | '"all"' Optional state filter
+function M.list(progress)
+  progress = progress or "all"
   local fp = utils.expand_path(config.todo_file)
   local todos = utils.parse_todos(fp)
 
@@ -243,9 +243,9 @@ function M.show(state)
   local todo_descs = vim
     .iter(todos)
     :filter(function(todo)
-      return (state == "all")
-        or (state == "completed" and todo.completed)
-        or (state == "incomplete" and not todo.completed)
+      return (progress == "all")
+        or (progress == "completed" and todo.completed)
+        or (progress == "incomplete" and not todo.completed)
     end)
     :map(function(todo)
       if todo.completed then
@@ -257,7 +257,7 @@ function M.show(state)
     :totable()
 
   if #todo_descs == 0 then
-    local msg = string.format("todo.nvim: no items found for '%s'", state)
+    local msg = string.format("todo.nvim: no items found for '%s'", progress)
     vim.notify(msg, vim.log.levels.INFO)
     return
   end
@@ -267,9 +267,9 @@ function M.show(state)
 end
 
 --- Mark the todo item of the given description as complete
----@param desc string the description of the todo item
-function M.complete(desc)
-  if desc == "" or desc == nil then
+---@param description string the description of the todo item
+function M.complete(description)
+  if description == "" or description == nil then
     vim.notify("todo.nvim: no item provided to complete", vim.log.levels.ERROR)
     return
   end
@@ -283,7 +283,7 @@ function M.complete(desc)
 
   local lines = {}
   local marked = false
-  local pattern = "%- %[ %] " .. vim.pesc(desc) .. "$"
+  local pattern = "%- %[ %] " .. vim.pesc(description) .. "$"
 
   for line in file:lines() do
     if not marked and string.match(line, pattern) then
@@ -303,10 +303,10 @@ function M.complete(desc)
   file:close()
 
   if not marked then
-    local msg = string.format("todo.nvim: unable to find item to mark: '%s'", desc)
+    local msg = string.format("todo.nvim: unable to find item to mark: '%s'", description)
     vim.notify(msg, vim.log.levels.WARN)
   else
-    local msg = string.format("todo.nvim: Marked complete: '%s'", desc)
+    local msg = string.format("todo.nvim: Marked complete: '%s'", description)
     vim.notify(msg, vim.log.levels.INFO)
   end
 end
@@ -337,8 +337,8 @@ local function init_terminal_cmds()
       M.today()
     elseif sub == "reset" then
       M.reset()
-    elseif sub == "show" then
-      M.show(args.fargs[2])
+    elseif sub == "list" then
+      M.list(args.fargs[2])
     elseif sub == "add" then
       M.add(table.concat(vim.list_slice(args.fargs, 2), " "))
     elseif sub == "remove" then
@@ -354,10 +354,10 @@ local function init_terminal_cmds()
     complete = function(_, line)
       local args = vim.split(line, "%s+")
       if #args == 2 then
-        return { "Today", "add", "complete", "remove", "show", "reset" }
+        return { "Today", "add", "complete", "remove", "list", "reset" }
       end
       if #args > 2 then
-        if args[2] == "show" then
+        if args[2] == "list" then
           return { "all", "completed", "incomplete" }
         elseif args[2] == "remove" then
           local todos = utils.parse_todos(config.todo_file)
