@@ -1,4 +1,4 @@
-*todo.nvim.txt*            For NVIM v0.8.0            Last change: 2025 May 21
+*todo.nvim.txt*            For NVIM v0.8.0           Last change: 2025 June 16
 
 ==============================================================================
 Table of Contents                                *todo.nvim-table-of-contents*
